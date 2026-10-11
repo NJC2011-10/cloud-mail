@@ -10,6 +10,9 @@ node_modules
 dist-ssr
 *.local
 dist
+!mail-worker/dist/
+mail-worker/dist/*
+!mail-worker/dist/.gitkeep
 
 .vscode/*
 !.vscode/extensions.json
