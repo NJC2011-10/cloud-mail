@@ -52,7 +52,6 @@ crons = ["0 * * * *"]	#每小时执行；resetDaySendCount 仅在 UTC 0 点生�
 #admin = ""					#管理员的邮箱	示例: admin@example.com
 #jwt_secret = ""			#jwt令牌的密钥,随便填一串字符串
 
-[vars]
 admin = "admin@mail.njc2025.de5.net"
 domain = '["njc123.dpdns.org", "inbox.njc123.dpdns.org", "mail.njc123.dpdns.org", "njc123.qzz.io", "inbox.njc123.qzz.io", "mail.njc123.qzz.io", "njc137.dpdns.org", "inbox.njc137.dpdns.org", "mail.njc137.dpdns.org", "njc137.qzz.io", "inbox.njc137.qzz.io", "mail.njc137.qzz.io", "njc2025.de5.net", "inbox.njc2025.de5.net", "mail.njc2025.de5.net", "njc2025.dpdns.org", "inbox.njc2025.dpdns.org", "mail.njc2025.dpdns.org", "email.njc2025.dpdns.org", "njc.qzz.io", "inbox.njc.qzz.io", "mail.njc.qzz.io"]'
 
