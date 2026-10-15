@@ -1,0 +1,70 @@
+name: Sync main and rebase custom
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 每天 UTC 2:00，北京时间 10:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-and-rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout custom
+        uses: actions/checkout@v4
+        with:
+          ref: custom
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get main SHA before
+        id: before
+        run: |
+          git fetch origin main
+          echo "sha=$(git rev-parse origin/main)" >> $GITHUB_OUTPUT
+
+      - name: Sync main with upstream
+        run: gh repo sync ${{ github.repository }} --branch main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch updated main and check
+        id: check
+        run: |
+          git fetch origin main
+          AFTER=$(git rev-parse origin/main)
+          BEFORE="${{ steps.before.outputs.sha }}"
+          if [ "$BEFORE" = "$AFTER" ]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Rebase custom onto main
+        if: steps.check.outputs.changed == 'true'
+        id: rebase
+        run: |
+          if git rebase origin/main; then
+            echo "result=clean" >> $GITHUB_OUTPUT
+          else
+            echo "result=conflict" >> $GITHUB_OUTPUT
+            git rebase --abort || true
+          fi
+
+      - name: Push custom if clean
+        if: steps.check.outputs.changed == 'true' && steps.rebase.outputs.result == 'clean'
+        run: git push --force-with-lease origin custom
+
+      - name: Create conflict issue
+        if: steps.check.outputs.changed == 'true' && steps.rebase.outputs.result == 'conflict'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: '⚠️ Auto-rebase conflict on custom branch'
+          content-filepath: .github/conflict-notice.md
